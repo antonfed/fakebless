@@ -1,91 +1,125 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<style>
-			body {
-				background-color: #ffffff;
-				margin: 0;
-				overflow: hidden;
-			}
-		</style>
-	</head>
-	<body>
-		<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
-		<script>
-
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
+<script src="https://threejs.org/examples/js/loaders/PCDLoader.js"></script>
+<script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script>
+<script src="https://threejs.org/examples/js/Detector.js"></script>
+<script src="https://threejs.org/examples/js/loaders/PLYLoader.js"></script>
+<script>
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			var container, stats;
-			var camera, controls, scene, renderer;
+			var camera, cameraTarget, scene, renderer;
 			init();
 			animate();
 			function init() {
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
+				camera.position.set( 3, 0.15, 3 );
+				cameraTarget = new THREE.Vector3( 0, -0.1, 0 );
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x000000 );
-				camera = new THREE.PerspectiveCamera( 15, window.innerWidth / window.innerHeight, 0.01, 40 );
-				camera.position.x = 0.4;
-				camera.position.z = -2;
-				camera.up.set(0,0,1);
-				controls = new THREE.TrackballControls( camera );
-				controls.rotateSpeed = 2.0;
-				controls.zoomSpeed = 0.3;
-				controls.panSpeed = 0.2;
-				controls.noZoom = false;
-				controls.noPan = false;
-				controls.staticMoving = true;
-				controls.dynamicDampingFactor = 0.3;
-				controls.minDistance = 0.3;
-				controls.maxDistance = 0.3 * 100;
-				scene.add( camera );
+				scene.background = new THREE.Color( 0x72645b );
+				scene.fog = new THREE.Fog( 0x72645b, 2, 15 );
+				// Ground
+				var plane = new THREE.Mesh(
+					new THREE.PlaneBufferGeometry( 40, 40 ),
+					new THREE.MeshPhongMaterial( { color: 0x999999, specular: 0x101010 } )
+				);
+				plane.rotation.x = -Math.PI/2;
+				plane.position.y = -0.5;
+				scene.add( plane );
+				plane.receiveShadow = true;
+				// PLY file
+				var loader = new THREE.PLYLoader();
+				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/pt.ply', function ( geometry ) {
+					geometry.computeVertexNormals();
+					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
+					var mesh = new THREE.Mesh( geometry, material );
+					mesh.position.y = - 0.2;
+					mesh.position.z =   0.3;
+					mesh.rotation.x = - Math.PI / 2;
+          mesh.rotation.x = 3.14;
+          mesh.rotation.z = 3.14;
+					mesh.scale.multiplyScalar( 0.01 );
+					mesh.castShadow = true;
+					mesh.receiveShadow = true;
+          console.log(mesh.geometry.getAttribute("position").count);
+					//scene.add( mesh );
+          var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var cube = new THREE.Mesh( geometry, material );
+          cube.scale.multiplyScalar( 0.02 );
+          
+          for (i = 0; i < mesh.geometry.getAttribute("position").count; i++) {
+            var new_cube = cube.clone();
+            new_cube.position.x=mesh.geometry.getAttribute("position").getX(i)*0.05;
+            new_cube.position.y=mesh.geometry.getAttribute("position").getY(i)*0.05;
+            new_cube.position.z=mesh.geometry.getAttribute("position").getZ(i)*0.05;
+            scene.add( new_cube );
+          }
+          
+				} );
+				loader.load( 'https://threejs.org/examples/models/ply/binary/Lucy100k.ply', function ( geometry ) {
+					geometry.computeVertexNormals();
+					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
+					var mesh = new THREE.Mesh( geometry, material );
+					mesh.position.x = - 0.2;
+					mesh.position.y = - 0.02;
+					mesh.position.z = - 0.2;
+					mesh.scale.multiplyScalar( 0.0006 );
+					mesh.castShadow = true;
+					mesh.receiveShadow = true;
+					scene.add( mesh );
+				} );
+				// Lights
+				scene.add( new THREE.HemisphereLight( 0x443333, 0x111122 ) );
+				addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
+				addShadowedLight( 0.5, 1, -1, 0xffaa00, 1 );
+				// renderer
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
-				var loader = new THREE.PCDLoader();
-				loader.load( './models/pcd/binary/Zaghetto.pcd', function ( mesh ) {
-					scene.add( mesh );
-					var center = mesh.geometry.boundingSphere.center;
-					controls.target.set( center.x, center.y, center.z);
-					controls.update();
-				} );
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				renderer.shadowMap.enabled = true;
 				container.appendChild( renderer.domElement );
+				// stats
 				stats = new Stats();
 				container.appendChild( stats.dom );
+				// resize
 				window.addEventListener( 'resize', onWindowResize, false );
-				window.addEventListener('keypress', keyboard);
+			}
+			function addShadowedLight( x, y, z, color, intensity ) {
+				var directionalLight = new THREE.DirectionalLight( color, intensity );
+				directionalLight.position.set( x, y, z );
+				scene.add( directionalLight );
+				directionalLight.castShadow = true;
+				var d = 1;
+				directionalLight.shadow.camera.left = -d;
+				directionalLight.shadow.camera.right = d;
+				directionalLight.shadow.camera.top = d;
+				directionalLight.shadow.camera.bottom = -d;
+				directionalLight.shadow.camera.near = 1;
+				directionalLight.shadow.camera.far = 4;
+				directionalLight.shadow.mapSize.width = 1024;
+				directionalLight.shadow.mapSize.height = 1024;
+				directionalLight.shadow.bias = -0.001;
 			}
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				controls.handleResize();
-			}
-			function keyboard ( ev ) {
-				var ZaghettoMesh = scene.getObjectByName( 'https://threejs.org/examples/models/pcd/binary/Zaghetto.pcd' );
-				switch ( ev.key || String.fromCharCode( ev.keyCode || ev.charCode ) ) {
-					case '+':
-						ZaghettoMesh.material.size*=1.2;
-						ZaghettoMesh.material.needsUpdate = true;
-						break;
-					case '-':
-						ZaghettoMesh.material.size/=1.2;
-						ZaghettoMesh.material.needsUpdate = true;
-						break;
-					case 'c':
-						ZaghettoMesh.material.color.setHex(Math.random()*0xffffff);
-						ZaghettoMesh.material.needsUpdate = true;
-						break;
-				}
 			}
 			function animate() {
 				requestAnimationFrame( animate );
-				controls.update();
-				renderer.render( scene, camera );
+				render();
 				stats.update();
 			}
-
-		</script>
-	</body>
-</html>
+			function render() {
+				var timer = Date.now() * 0.0005;
+				camera.position.x = Math.sin( timer ) * 2.5;
+				camera.position.z = Math.cos( timer ) * 2.5;
+				camera.lookAt( cameraTarget );
+				renderer.render( scene, camera );
+			}
+	
+</script>
