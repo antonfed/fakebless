@@ -1,4 +1,69 @@
-<head>
+<html lang="en" class="gr__s_codepen_io"><script>(function main() {
+    // Create enabled event
+    function fireEnabledEvent() {
+        // If gli exists, then we are already present and shouldn't do anything
+        if (!window.gli) {
+            setTimeout(function () {
+                var enabledEvent = document.createEvent("Event");
+                enabledEvent.initEvent("WebGLEnabledEvent", true, true);
+                document.dispatchEvent(enabledEvent);
+            }, 0);
+        } else {
+            //console.log("WebGL Inspector already embedded on the page - disabling extension");
+        }
+    };
+
+    // Grab the path root from the extension
+    document.addEventListener("WebGLInspectorReadyEvent", function (e) {
+        var pathElement = document.getElementById("__webglpathroot");
+        if (window["gliloader"]) {
+            gliloader.pathRoot = pathElement.innerText;
+        } else {
+            // TODO: more?
+            window.gliCssUrl = pathElement.innerText + "gli.all.css";
+        }
+    }, false);
+
+    // Rewrite getContext to snoop for webgl
+    var originalGetContext = HTMLCanvasElement.prototype.getContext;
+    if (!HTMLCanvasElement.prototype.getContextRaw) {
+        HTMLCanvasElement.prototype.getContextRaw = originalGetContext;
+    }
+    HTMLCanvasElement.prototype.getContext = function () {
+        var ignoreCanvas = this.internalInspectorSurface;
+        if (ignoreCanvas) {
+            return originalGetContext.apply(this, arguments);
+        }
+
+        var result = originalGetContext.apply(this, arguments);
+        if (result == null) {
+            return null;
+        }
+
+        var contextNames = ["moz-webgl", "webkit-3d", "experimental-webgl", "webgl", "3d"];
+        var requestingWebGL = contextNames.indexOf(arguments[0]) != -1;
+        if (requestingWebGL) {
+            // Page is requesting a WebGL context!
+            fireEnabledEvent(this);
+
+            // If we are injected, inspect this context
+            if (window.gli) {
+                if (gli.host.inspectContext) {
+                    // TODO: pull options from extension
+                    result = gli.host.inspectContext(this, result);
+                    // NOTE: execute in a timeout so that if the dom is not yet
+                    // loaded this won't error out.
+                    window.setTimeout(function() {
+                        var hostUI = new gli.host.HostUI(result);
+                        result.hostUI = hostUI; // just so we can access it later for debugging
+                    }, 0);
+                }
+            }
+        }
+
+        return result;
+    };
+})();</script><head>
 
   <meta charset="UTF-8">
   <link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico">
@@ -32,3 +97,304 @@ canvas {
   
 
 </head>
+
+<body translate="no" data-gr-c-s-loaded="true">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
+<script src="https://threejs.org/examples/js/loaders/PCDLoader.js"></script>
+<script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script>
+<script src="https://threejs.org/examples/js/Detector.js"></script>
+<script src="https://threejs.org/examples/js/loaders/PLYLoader.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script type="https://raw.githubusercontent.com/antonfed/fakebless/master/data.txt"></script>
+  
+  
+  
+
+    <script>
+      
+
+
+
+
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			
+      var text2;
+      var raycaster;
+      var mouse = new THREE.Vector2(), INTERSECTED;
+      var pickingData = [], pickingTexture, pickingScene;
+      
+      var container, stats;
+			var camera, cameraTarget, scene, renderer;
+			init();
+			animate();
+			function init() {
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+        var coof=0.002;
+        camera = new THREE.OrthographicCamera(
+    window.innerWidth / -2*coof, // frustum left plane
+    window.innerWidth / 2*coof, // frustum right plane.
+    window.innerHeight / 2*coof, // frustum top plane.
+    window.innerHeight / -2*coof, // frustum bottom plane. 
+    0.001, // frustum near plane.
+    100 // frustum far plane.
+  );
+				//camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
+				camera.position.set( 5, 5, -5 );
+				cameraTarget = new THREE.Vector3( 0, -0.1, 0 );
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x72645b );
+        var transform;
+				// Ground
+				var plane = new THREE.Mesh(
+					new THREE.PlaneBufferGeometry( 40, 40 ),
+					new THREE.MeshPhongMaterial( { color: 0x999999, specular: 0x101010 } )
+				);
+				plane.rotation.x = -Math.PI/2;
+				plane.position.y = -0.5;
+				scene.add( plane );
+				plane.receiveShadow = true;
+        
+            function getJSON(url) {
+        var resp ;
+        var xmlHttp ;
+
+        resp  = '' ;
+        xmlHttp = new XMLHttpRequest();
+
+        if(xmlHttp != null)
+        {
+            xmlHttp.open( "GET", url, false );
+            xmlHttp.send( null );
+            resp = xmlHttp.responseText;
+        }
+
+        return resp ;
+    }
+
+        var gjson ;
+        gjson = getJSON("https://raw.githubusercontent.com/antonfed/fakebless/master/data.txt");
+
+        var js_st = JSON.parse(gjson);
+        
+        
+        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+        var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+        var cube_null = new THREE.Mesh( geometry, material );
+        cube_null.scale.multiplyScalar( 0.1 );
+        cube_null.position.y = - 0.2;
+				cube_null.position.z =   0.3;
+				cube_null.rotation.x = - Math.PI / 2;
+        cube_null.rotation.x = 3.14;
+        cube_null.rotation.z = 3.14;
+        cube_null.updateMatrix()
+        scene.add(cube_null);
+        
+
+
+
+
+          
+          var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var cube = new THREE.Mesh( geometry, material );
+          cube.scale.multiplyScalar( 0.05 );
+          
+          var geometry = new THREE.SphereGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var sphere = new THREE.Mesh( geometry, material );
+          sphere.scale.multiplyScalar( 0.05 );
+          
+          var geometry = new THREE.CylinderGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var cone = new THREE.Mesh( geometry, material );
+          cone.scale.multiplyScalar( 0.05 );
+         
+          var geometry = new THREE.DodecahedronGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var dode = new THREE.Mesh( geometry, material );
+          dode.scale.multiplyScalar( 0.05 );
+          
+          var geometry = new THREE.OctahedronGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var octa = new THREE.Mesh( geometry, material );
+          octa.scale.multiplyScalar( 0.05 );
+          
+          
+          console.log(js_st[0].name);
+          for (i = 0; i < js_st.length; i++) {
+            
+            var cc = new THREE.Color();
+            cc.fromArray(js_st[i].color);
+            
+            var vec = new THREE.Vector3();        
+            vec.fromArray(js_st[i].P);
+            var new_cube;
+            switch(js_st[i].type){
+            case 0: new_cube = cube.clone();break;
+            case 1: new_cube = sphere.clone();break;
+            case 2: new_cube = cone.clone();break;
+            case 3: new_cube = cube.clone();break;
+            case 4: new_cube = octa.clone();break;
+            case 5: new_cube = cube.clone();break;
+            default: new_cube = cube.clone();break;
+            }
+            var mat = new THREE.MeshStandardMaterial();
+            mat.color.copy(cc);
+            new_cube.material = mat;
+            mat.flatShading =1;
+            new_cube.name = js_st[i].name;
+            
+            
+            vec.applyMatrix4(cube_null.matrix);
+            new_cube.position.copy(vec);
+            
+            scene.add( new_cube );
+          }
+          
+        
+        //Text
+        var loader = new THREE.PLYLoader();
+				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/font.ply', function ( geometry ) {
+					geometry.computeVertexNormals();
+					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
+					var mesh = new THREE.Mesh( geometry, material );
+                                                           
+          cube_null.add( mesh );
+        				} );
+        
+          //Text
+        var loader = new THREE.PLYLoader();
+				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/font2.ply', function ( geometry ) {
+					geometry.computeVertexNormals();
+					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
+					var mesh = new THREE.Mesh( geometry, material );
+
+          cube_null.add( mesh );
+          
+				} );
+        
+				// Lights
+				scene.add( new THREE.HemisphereLight( 0x443333, 0x111122 ) );
+				addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
+				addShadowedLight( 0.5, 1, -1, 0xffaa00, 1 );
+				// renderer
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth*0.9, window.innerHeight*0.8 );
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				renderer.shadowMap.enabled = true;
+        
+				container.appendChild( renderer.domElement );
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+				//camera
+        // CONTROLS
+				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+				cameraControls.minAzimuthAngle=3.14/4+3.14/2;
+        cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
+        cameraControls.minPolarAngle=3.14/4-3.14/6;
+        cameraControls.maxPolarAngle=3.14/4+3.14/6;
+        cameraControls.update();
+        camera.lookAt( cameraTarget );
+        
+        
+        text2 = document.createElement('div');
+        text2.style.position = 'absolute';
+        text2.style.zIndex = 5;    // if you still don't see the label, try uncommenting this
+        text2.style.width = 100;
+        text2.style.height = 100;
+        text2.style.backgroundColor = "blue";
+        text2.style.fontSize = "xx-large";
+        text2.style.bottom = 200 + 'px';
+        text2.style.left = 200 + 'px';
+        document.body.appendChild(text2);
+        
+        
+        
+        
+        raycaster = new THREE.Raycaster();
+        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+        // resize
+				//window.addEventListener( 'resize', onWindowResize, false );
+        window.addEventListener( 'resize', onWindowResize, false );
+			}
+			function addShadowedLight( x, y, z, color, intensity ) {
+				var directionalLight = new THREE.DirectionalLight( color, intensity );
+				directionalLight.position.set( x, y, z );
+				scene.add( directionalLight );
+				directionalLight.castShadow = true;
+				var d = 1;
+				directionalLight.shadow.camera.left = -d;
+				directionalLight.shadow.camera.right = d;
+				directionalLight.shadow.camera.top = d;
+				directionalLight.shadow.camera.bottom = -d;
+				directionalLight.shadow.camera.near = 1;
+				directionalLight.shadow.camera.far = 4;
+				directionalLight.shadow.mapSize.width = 1024;
+				directionalLight.shadow.mapSize.height = 1024;
+				directionalLight.shadow.bias = -0.001;
+			}
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+				stats.update();
+			}
+			function render() {
+				var timer = Date.now() * 0.0005;
+         // find intersections
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( scene.children );
+				if ( intersects.length > 0 ) {
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+						if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+						INTERSECTED.material.emissive.setHex( 0xff0000 );
+            text2.innerHTML = INTERSECTED.name;
+					}
+				} else {
+					if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+					INTERSECTED = null;
+				} 
+
+				
+				renderer.render( scene, camera );
+			}
+        
+	    function onDocumentMouseMove( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			}
+      
+      
+
+function onWindowResize( event ) {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    
+    // adjust the FOV
+    camera.fov = ( 360 / Math.PI ) * Math.atan( tanFOV * ( window.innerHeight / windowHeight ) );
+    
+    camera.updateProjectionMatrix();
+    camera.lookAt( scene.position );
+
+    renderer.setSize( window.innerWidth, window.innerHeight);
+    renderer.render( scene, camera );
+}
+    </script><div><canvas width="2304" height="1067" style="width: 2304px; height: 1067.2px;"></canvas><div style="position: fixed; top: 0px; left: 0px; cursor: pointer; opacity: 0.9; z-index: 10000;"><canvas width="80" height="48" style="width: 80px; height: 48px; display: block;"></canvas><canvas width="80" height="48" style="width: 80px; height: 48px; display: none;"></canvas><canvas width="80" height="48" style="width: 80px; height: 48px; display: none;"></canvas></div></div><div style="position: absolute; z-index: 5; background-color: blue; font-size: xx-large; bottom: 200px; left: 200px;"></div>
+
+
+
+  
+  
+
+
+
+
+ </body></html>
