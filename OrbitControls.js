@@ -14,7 +14,9 @@
 //    Pan - right mouse, or arrow keys / touch: three finger swipe
 
 THREE.OrbitControls = function ( object, domElement ) {
-
+	
+	
+	console.log("is this?");
 	this.object = object;
 
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -805,7 +807,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	function onTouchStart( event ) {
 
 		if ( scope.enabled === false ) return;
-
+		console.log(event.touches.length);
 		switch ( event.touches.length ) {
 
 			case 3:	// one-fingered touch: rotate
