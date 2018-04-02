@@ -1,4 +1,24 @@
-<body></body>
+<head>
+<style media="screen" type="text/css">
+
+@import "bourbon";
+
+body {
+  padding: 0;
+  margin: 0;
+}
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+</style>
+</head>
+
+<body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
 <script src="https://threejs.org/examples/js/loaders/PCDLoader.js"></script>
@@ -282,5 +302,6 @@ function onWindowResize( event ) {
     renderer.render( scene, camera );
 }
 
-</script>	
+	</script>
+</body>
 	
