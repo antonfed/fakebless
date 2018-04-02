@@ -858,13 +858,13 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		event.preventDefault();
 		event.stopPropagation();
-
+		console.log(event.touches.length);
 		switch ( event.touches.length ) {
 
 			case 3: // one-fingered touch: rotate
 
 				if ( scope.enableRotate === false ) return;
-				if ( state !== STATE.TOUCH_ROTATE ) return; // is this needed?...
+				//if ( state !== STATE.TOUCH_ROTATE ) return; // is this needed?...
 
 				handleTouchMoveRotate( event );
 
@@ -882,7 +882,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 			case 1: // three-fingered touch: pan
 
 				if ( scope.enablePan === false ) return;
-				if ( state !== STATE.TOUCH_PAN ) return; // is this needed?...
+				//if ( state !== STATE.TOUCH_PAN ) return; // is this needed?...
 
 				handleTouchMovePan( event );
 
