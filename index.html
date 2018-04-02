@@ -1,29 +1,18 @@
 <html lang="en" class="gr__s_codepen_io"><head>
 
-  
-  
-  
-  
-  
-  
-  
-  
+<style>
+* { margin:0; padding:0; } /* to remove the top and left whitespace */
 
-      <style>
+html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
 
-body {
-  padding: 0;
-  margin: 0;
-}
+canvas { display:block; } /* To remove the scrollbars */
+
+
+/* to show the canvas bounds */
 canvas {
-  width: 100% !important;
-  height: 100% !important;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
+    background: #eee;
 }
-    </style>
+</style>
 
   
   
@@ -34,7 +23,7 @@ canvas {
 
 <body>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
 <script src="https://threejs.org/examples/js/loaders/PCDLoader.js"></script>
 <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
 <script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script>
@@ -46,14 +35,14 @@ canvas {
   
   
 
-    <script>
-      
+<script>
+
 
 
 
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-			
+			var coof=0.002;
       var text2;
       var raycaster;
       var mouse = new THREE.Vector2(), INTERSECTED;
@@ -64,16 +53,16 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			init();
 			animate();
 			function init() {
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
-        var coof=0.002;
-        camera = new THREE.OrthographicCamera(
-    window.innerWidth / -2*coof, // frustum left plane
-    window.innerWidth / 2*coof, // frustum right plane.
-    window.innerHeight / 2*coof, // frustum top plane.
-    window.innerHeight / -2*coof, // frustum bottom plane. 
-    0.001, // frustum near plane.
-    100 // frustum far plane.
+		  container = document.createElement( 'div' );
+			document.body.appendChild( container );
+       
+      camera = new THREE.OrthographicCamera(
+      window.innerWidth / -2*coof, // frustum left plane
+      window.innerWidth / 2*coof, // frustum right plane.
+      window.innerHeight / 2*coof, // frustum top plane.
+      window.innerHeight / -2*coof, // frustum bottom plane. 
+      0.001, // frustum near plane.
+      100 // frustum far plane.
   );
 				//camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
 				camera.position.set( 5, 5, -5 );
@@ -88,35 +77,32 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				);
 				plane.rotation.x = -Math.PI/2;
 				plane.position.y = -0.5;
-				scene.add( plane );
 				plane.receiveShadow = true;
+        scene.add( plane );
         
-            function getJSON(url) {
-        var resp ;
-        var xmlHttp ;
+        
+        function getJSON(url) {
+          var resp ;
+          var xmlHttp ;
 
-        resp  = '' ;
-        xmlHttp = new XMLHttpRequest();
+          resp  = '' ;
+          xmlHttp = new XMLHttpRequest();
 
-        if(xmlHttp != null)
-        {
-            xmlHttp.open( "GET", url, false );
-            xmlHttp.send( null );
-            resp = xmlHttp.responseText;
+          if(xmlHttp != null)
+          {
+              xmlHttp.open( "GET", url, false );
+              xmlHttp.send( null );
+              resp = xmlHttp.responseText;
         }
-
         return resp ;
     }
 
         var gjson ;
         gjson = getJSON("https://raw.githubusercontent.com/antonfed/fakebless/master/data.txt");
-
         var js_st = JSON.parse(gjson);
         
         
-        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-        var cube_null = new THREE.Mesh( geometry, material );
+        var cube_null = new THREE.Object3D();
         cube_null.scale.multiplyScalar( 0.1 );
         cube_null.position.y = - 0.2;
 				cube_null.position.z =   0.3;
@@ -217,24 +203,20 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				// renderer
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth*0.9, window.innerHeight*0.8 );
+				renderer.setSize( window.innerWidth, window.innerHeight);
 				renderer.gammaInput = true;
 				renderer.gammaOutput = true;
 				renderer.shadowMap.enabled = true;
         
 				container.appendChild( renderer.domElement );
-				// stats
-				stats = new Stats();
-				container.appendChild( stats.dom );
-				//camera
-        // CONTROLS
+
 				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
 				cameraControls.minAzimuthAngle=3.14/4+3.14/2;
         cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
         cameraControls.minPolarAngle=3.14/4-3.14/6;
         cameraControls.maxPolarAngle=3.14/4+3.14/6;
         cameraControls.update();
-        camera.lookAt( cameraTarget );
+
         
         
         text2 = document.createElement('div');
@@ -252,9 +234,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
         
         
         raycaster = new THREE.Raycaster();
-        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-        // resize
-				//window.addEventListener( 'resize', onWindowResize, false );
+        window.addEventListener( 'mousemove', onDocumentMouseMove, false );
         window.addEventListener( 'resize', onWindowResize, false );
 			}
 			function addShadowedLight( x, y, z, color, intensity ) {
@@ -279,6 +259,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				stats.update();
 			}
 			function render() {
+        
+        
 				var timer = Date.now() * 0.0005;
          // find intersections
 				raycaster.setFromCamera( mouse, camera );
@@ -296,7 +278,6 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 					INTERSECTED = null;
 				} 
 
-				
 				renderer.render( scene, camera );
 			}
         
@@ -310,25 +291,15 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 function onWindowResize( event ) {
 
-    camera.aspect = window.innerWidth / window.innerHeight;
-    
-    // adjust the FOV
-    camera.fov = ( 360 / Math.PI ) * Math.atan( tanFOV * ( window.innerHeight / windowHeight ) );
-    
-    camera.updateProjectionMatrix();
-    camera.lookAt( scene.position );
+    camera.left = window.innerWidth / -2*coof;
+    camera.right = window.innerWidth / 2*coof;
+    camera.top =  window.innerHeight / 2*coof;
+    camera.bottom = window.innerHeight / -2*coof;
+    camera.updateProjectionMatrix () 
+     
 
     renderer.setSize( window.innerWidth, window.innerHeight);
     renderer.render( scene, camera );
 }
-    </script><div><canvas width="1263" height="1067" style="width: 1263.6px; height: 1067.2px;"></canvas></div>
-
-
-
-  
-  
-
-
-
-
+    </script>
  </body></html>
