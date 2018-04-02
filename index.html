@@ -39,8 +39,6 @@ canvas {
 
 
 
-
-
 THREE.OrbitControls = function ( object, domElement ) {
 	
 	
@@ -1233,11 +1231,11 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
             new_cube.position.copy(vec);
             
             var material = new THREE.LineBasicMaterial( { color: 0xffffff } );
-            material.opacity=0.2;
+            material.opacity=0.15;
             material.transparent = true;
             var geometry = new THREE.Geometry();
             var b_vec = vec.clone();
-            b_vec.y=-1;
+            b_vec.y=10;
             geometry.vertices.push(vec);
             geometry.vertices.push(b_vec);
             var line = new THREE.Line( geometry, material );
@@ -1270,9 +1268,9 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
         var loader = new THREE.PLYLoader();
 				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/terrain.ply', function ( geometry ) {
 					geometry.computeVertexNormals();
-					var material = new THREE.MeshBasicMaterial( { color: 0x050505,vertexColors: THREE.VertexColors } );
+					var material = new THREE.MeshStandardMaterial( { color: 0x050207,flatShading: true,vertexColors: THREE.VertexColors } );
           material.flipSided = true;
-          material.reflectivity=0;
+          material.roughness=0.75;
 					var mesh = new THREE.Mesh( geometry, material );
           cube_null.add( mesh );
           
@@ -1315,8 +1313,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
         text2 = document.createElement('div');
         text2.style.position = 'absolute';
         text2.style.zIndex = 5;    // if you still don't see the label, try uncommenting this
-        text2.style.width = 400;
-        text2.style.height = 400;
+        text2.style.width = 1000+'px';
+        text2.style.height = 40+'px';
         //text2.style.backgroundColor = "#000000";
         text2.style.fontSize = "xx-large";
         text2.style.bottom = 30 + 'px';
