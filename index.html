@@ -207,11 +207,13 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				container.appendChild( renderer.domElement );
 
 				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+				cameraControls.mouseButtons.ORBIT=2
+        			cameraControls.mouseButtons.PAN=0
 				cameraControls.minAzimuthAngle=3.14/4+3.14/2;
-        cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
-        cameraControls.minPolarAngle=3.14/4-3.14/6;
-        cameraControls.maxPolarAngle=3.14/4+3.14/6;
-        cameraControls.update();
+				cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
+				cameraControls.minPolarAngle=3.14/4-3.14/6;
+				cameraControls.maxPolarAngle=3.14/4+3.14/6;
+				cameraControls.update();
 
         
         
