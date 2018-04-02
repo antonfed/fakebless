@@ -207,13 +207,14 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				container.appendChild( renderer.domElement );
 
 				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-				cameraControls.mouseButtons.ORBIT=2
-        			cameraControls.mouseButtons.PAN=0
+        console.log();
+        cameraControls.mouseButtons.ORBIT=2
+        cameraControls.mouseButtons.PAN=0
 				cameraControls.minAzimuthAngle=3.14/4+3.14/2;
-				cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
-				cameraControls.minPolarAngle=3.14/4-3.14/6;
-				cameraControls.maxPolarAngle=3.14/4+3.14/6;
-				cameraControls.update();
+        cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
+        cameraControls.minPolarAngle=3.14/4-3.14/6;
+        cameraControls.maxPolarAngle=3.14/4+3.14/6;
+        cameraControls.update();
 
         
         
@@ -222,10 +223,10 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
         text2.style.zIndex = 5;    // if you still don't see the label, try uncommenting this
         text2.style.width = 100;
         text2.style.height = 100;
-        text2.style.backgroundColor = "blue";
+        //text2.style.backgroundColor = "";
         text2.style.fontSize = "xx-large";
-        text2.style.bottom = 200 + 'px';
-        text2.style.left = 200 + 'px';
+        text2.style.bottom = 100 + 'px';
+        text2.style.left = 100 + 'px';
         document.body.appendChild(text2);
         
         
