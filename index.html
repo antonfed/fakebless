@@ -1,4 +1,3 @@
-<body></body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
 <script src="https://threejs.org/examples/js/loaders/PCDLoader.js"></script>
@@ -6,21 +5,56 @@
 <script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script>
 <script src="https://threejs.org/examples/js/Detector.js"></script>
 <script src="https://threejs.org/examples/js/loaders/PLYLoader.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script type="https://raw.githubusercontent.com/antonfed/fakebless/master/data.txt"></script>
+
+@import "bourbon";
+
+body {
+  padding: 0;
+  margin: 0;
+}
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+
+
 <script>
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-			var container, stats;
+			
+      var text2;
+      var raycaster;
+      var mouse = new THREE.Vector2(), INTERSECTED;
+      var pickingData = [], pickingTexture, pickingScene;
+      
+      var container, stats;
 			var camera, cameraTarget, scene, renderer;
 			init();
 			animate();
 			function init() {
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
-				camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
-				camera.position.set( 3, 0.15, 3 );
+        var coof=0.002;
+        camera = new THREE.OrthographicCamera(
+    window.innerWidth / -2*coof, // frustum left plane
+    window.innerWidth / 2*coof, // frustum right plane.
+    window.innerHeight / 2*coof, // frustum top plane.
+    window.innerHeight / -2*coof, // frustum bottom plane. 
+    0.001, // frustum near plane.
+    100 // frustum far plane.
+  );
+				//camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
+				camera.position.set( 5, 5, -5 );
 				cameraTarget = new THREE.Vector3( 0, -0.1, 0 );
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0x72645b );
-				scene.fog = new THREE.Fog( 0x72645b, 2, 15 );
+        var transform;
 				// Ground
 				var plane = new THREE.Mesh(
 					new THREE.PlaneBufferGeometry( 40, 40 ),
@@ -30,48 +64,126 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				plane.position.y = -0.5;
 				scene.add( plane );
 				plane.receiveShadow = true;
-				// PLY file
-				var loader = new THREE.PLYLoader();
-				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/pt.ply', function ( geometry ) {
-					geometry.computeVertexNormals();
-					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
-					var mesh = new THREE.Mesh( geometry, material );
-					mesh.position.y = - 0.2;
-					mesh.position.z =   0.3;
-					mesh.rotation.x = - Math.PI / 2;
-          mesh.rotation.x = 3.14;
-          mesh.rotation.z = 3.14;
-					mesh.scale.multiplyScalar( 0.01 );
-					mesh.castShadow = true;
-					mesh.receiveShadow = true;
-          console.log(mesh.geometry.getAttribute("position").count);
-					//scene.add( mesh );
+        
+            function getJSON(url) {
+        var resp ;
+        var xmlHttp ;
+
+        resp  = '' ;
+        xmlHttp = new XMLHttpRequest();
+
+        if(xmlHttp != null)
+        {
+            xmlHttp.open( "GET", url, false );
+            xmlHttp.send( null );
+            resp = xmlHttp.responseText;
+        }
+
+        return resp ;
+    }
+
+        var gjson ;
+        gjson = getJSON("https://raw.githubusercontent.com/antonfed/fakebless/master/data.txt");
+
+        var js_st = JSON.parse(gjson);
+        
+        
+        var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+        var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+        var cube_null = new THREE.Mesh( geometry, material );
+        cube_null.scale.multiplyScalar( 0.1 );
+        cube_null.position.y = - 0.2;
+				cube_null.position.z =   0.3;
+				cube_null.rotation.x = - Math.PI / 2;
+        cube_null.rotation.x = 3.14;
+        cube_null.rotation.z = 3.14;
+        cube_null.updateMatrix()
+        scene.add(cube_null);
+        
+
+
+
+
+          
           var geometry = new THREE.BoxGeometry( 1, 1, 1 );
           var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
           var cube = new THREE.Mesh( geometry, material );
-          cube.scale.multiplyScalar( 0.02 );
+          cube.scale.multiplyScalar( 0.05 );
           
-          for (i = 0; i < mesh.geometry.getAttribute("position").count; i++) {
-            var new_cube = cube.clone();
-            new_cube.position.x=mesh.geometry.getAttribute("position").getX(i)*0.05;
-            new_cube.position.y=mesh.geometry.getAttribute("position").getY(i)*0.05;
-            new_cube.position.z=mesh.geometry.getAttribute("position").getZ(i)*0.05;
+          var geometry = new THREE.SphereGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var sphere = new THREE.Mesh( geometry, material );
+          sphere.scale.multiplyScalar( 0.05 );
+          
+          var geometry = new THREE.CylinderGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var cone = new THREE.Mesh( geometry, material );
+          cone.scale.multiplyScalar( 0.05 );
+         
+          var geometry = new THREE.DodecahedronGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var dode = new THREE.Mesh( geometry, material );
+          dode.scale.multiplyScalar( 0.05 );
+          
+          var geometry = new THREE.OctahedronGeometry( 1, 1, 1 );
+          var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+          var octa = new THREE.Mesh( geometry, material );
+          octa.scale.multiplyScalar( 0.05 );
+          
+          
+          console.log(js_st[0].name);
+          for (i = 0; i < js_st.length; i++) {
+            
+            var cc = new THREE.Color();
+            cc.fromArray(js_st[i].color);
+            
+            var vec = new THREE.Vector3();        
+            vec.fromArray(js_st[i].P);
+            var new_cube;
+            switch(js_st[i].type){
+            case 0: new_cube = cube.clone();break;
+            case 1: new_cube = sphere.clone();break;
+            case 2: new_cube = cone.clone();break;
+            case 3: new_cube = cube.clone();break;
+            case 4: new_cube = octa.clone();break;
+            case 5: new_cube = cube.clone();break;
+            default: new_cube = cube.clone();break;
+            }
+            var mat = new THREE.MeshStandardMaterial();
+            mat.color.copy(cc);
+            new_cube.material = mat;
+            mat.flatShading =1;
+            new_cube.name = js_st[i].name;
+            
+            
+            vec.applyMatrix4(cube_null.matrix);
+            new_cube.position.copy(vec);
+            
             scene.add( new_cube );
           }
           
-				} );
-				loader.load( 'https://threejs.org/examples/models/ply/binary/Lucy100k.ply', function ( geometry ) {
+        
+        //Text
+        var loader = new THREE.PLYLoader();
+				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/font.ply', function ( geometry ) {
 					geometry.computeVertexNormals();
 					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
 					var mesh = new THREE.Mesh( geometry, material );
-					mesh.position.x = - 0.2;
-					mesh.position.y = - 0.02;
-					mesh.position.z = - 0.2;
-					mesh.scale.multiplyScalar( 0.0006 );
-					mesh.castShadow = true;
-					mesh.receiveShadow = true;
-					scene.add( mesh );
+                                                           
+          cube_null.add( mesh );
+        				} );
+        
+          //Text
+        var loader = new THREE.PLYLoader();
+				loader.load( 'https://raw.githubusercontent.com/antonfed/fakebless/master/font2.ply', function ( geometry ) {
+					geometry.computeVertexNormals();
+					var material = new THREE.MeshStandardMaterial( { color: 0x0055ff, flatShading: true } );
+					var mesh = new THREE.Mesh( geometry, material );
+
+          cube_null.add( mesh );
+          
 				} );
+        
 				// Lights
 				scene.add( new THREE.HemisphereLight( 0x443333, 0x111122 ) );
 				addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
@@ -79,16 +191,45 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				// renderer
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setSize( window.innerWidth*0.9, window.innerHeight*0.8 );
 				renderer.gammaInput = true;
 				renderer.gammaOutput = true;
 				renderer.shadowMap.enabled = true;
+        
 				container.appendChild( renderer.domElement );
 				// stats
 				stats = new Stats();
 				container.appendChild( stats.dom );
-				// resize
-				window.addEventListener( 'resize', onWindowResize, false );
+				//camera
+        // CONTROLS
+				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+				cameraControls.minAzimuthAngle=3.14/4+3.14/2;
+        cameraControls.maxAzimuthAngle=3.14/4+3.14/2;
+        cameraControls.minPolarAngle=3.14/4-3.14/6;
+        cameraControls.maxPolarAngle=3.14/4+3.14/6;
+        cameraControls.update();
+        camera.lookAt( cameraTarget );
+        
+        
+        text2 = document.createElement('div');
+        text2.style.position = 'absolute';
+        text2.style.zIndex = 5;    // if you still don't see the label, try uncommenting this
+        text2.style.width = 100;
+        text2.style.height = 100;
+        text2.style.backgroundColor = "blue";
+        text2.style.fontSize = "xx-large";
+        text2.style.bottom = 200 + 'px';
+        text2.style.left = 200 + 'px';
+        document.body.appendChild(text2);
+        
+        
+        
+        
+        raycaster = new THREE.Raycaster();
+        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+        // resize
+				//window.addEventListener( 'resize', onWindowResize, false );
+        window.addEventListener( 'resize', onWindowResize, false );
 			}
 			function addShadowedLight( x, y, z, color, intensity ) {
 				var directionalLight = new THREE.DirectionalLight( color, intensity );
@@ -106,11 +247,6 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				directionalLight.shadow.mapSize.height = 1024;
 				directionalLight.shadow.bias = -0.001;
 			}
-			function onWindowResize() {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
 			function animate() {
 				requestAnimationFrame( animate );
 				render();
@@ -118,10 +254,46 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			}
 			function render() {
 				var timer = Date.now() * 0.0005;
-				camera.position.x = Math.sin( timer ) * 2.5;
-				camera.position.z = Math.cos( timer ) * 2.5;
-				camera.lookAt( cameraTarget );
+         // find intersections
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( scene.children );
+				if ( intersects.length > 0 ) {
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+						if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+						INTERSECTED.material.emissive.setHex( 0xff0000 );
+            text2.innerHTML = INTERSECTED.name;
+					}
+				} else {
+					if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+					INTERSECTED = null;
+				} 
+
+				
 				renderer.render( scene, camera );
 			}
+        
+	    function onDocumentMouseMove( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			}
+      
+      
+
+function onWindowResize( event ) {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    
+    // adjust the FOV
+    camera.fov = ( 360 / Math.PI ) * Math.atan( tanFOV * ( window.innerHeight / windowHeight ) );
+    
+    camera.updateProjectionMatrix();
+    camera.lookAt( scene.position );
+
+    renderer.setSize( window.innerWidth, window.innerHeight);
+    renderer.render( scene, camera );
+}
+</script>	
 	
-</script>
