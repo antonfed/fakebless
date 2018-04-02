@@ -1,75 +1,16 @@
-<head>
-	
-<script>(function main() {
-    // Create enabled event
-    function fireEnabledEvent() {
-        // If gli exists, then we are already present and shouldn't do anything
-        if (!window.gli) {
-            setTimeout(function () {
-                var enabledEvent = document.createEvent("Event");
-                enabledEvent.initEvent("WebGLEnabledEvent", true, true);
-                document.dispatchEvent(enabledEvent);
-            }, 0);
-        } else {
-            //console.log("WebGL Inspector already embedded on the page - disabling extension");
-        }
-    };
+<html lang="en" class="gr__s_codepen_io"><head>
 
-    // Grab the path root from the extension
-    document.addEventListener("WebGLInspectorReadyEvent", function (e) {
-        var pathElement = document.getElementById("__webglpathroot");
-        if (window["gliloader"]) {
-            gliloader.pathRoot = pathElement.innerText;
-        } else {
-            // TODO: more?
-            window.gliCssUrl = pathElement.innerText + "gli.all.css";
-        }
-    }, false);
+  
+  
+  
+  
+  
+  
+  
+  
 
-    // Rewrite getContext to snoop for webgl
-    var originalGetContext = HTMLCanvasElement.prototype.getContext;
-    if (!HTMLCanvasElement.prototype.getContextRaw) {
-        HTMLCanvasElement.prototype.getContextRaw = originalGetContext;
-    }
-    HTMLCanvasElement.prototype.getContext = function () {
-        var ignoreCanvas = this.internalInspectorSurface;
-        if (ignoreCanvas) {
-            return originalGetContext.apply(this, arguments);
-        }
-
-        var result = originalGetContext.apply(this, arguments);
-        if (result == null) {
-            return null;
-        }
-
-        var contextNames = ["moz-webgl", "webkit-3d", "experimental-webgl", "webgl", "3d"];
-        var requestingWebGL = contextNames.indexOf(arguments[0]) != -1;
-        if (requestingWebGL) {
-            // Page is requesting a WebGL context!
-            fireEnabledEvent(this);
-
-            // If we are injected, inspect this context
-            if (window.gli) {
-                if (gli.host.inspectContext) {
-                    // TODO: pull options from extension
-                    result = gli.host.inspectContext(this, result);
-                    // NOTE: execute in a timeout so that if the dom is not yet
-                    // loaded this won't error out.
-                    window.setTimeout(function() {
-                        var hostUI = new gli.host.HostUI(result);
-                        result.hostUI = hostUI; // just so we can access it later for debugging
-                    }, 0);
-                }
-            }
-        }
-
-        return result;
-    };
-})();</script>	
-	
-<style media="screen" type="text/css">
-
-@import "bourbon";
+      <style>
+      @import "bourbon";
 
 body {
   padding: 0;
@@ -83,15 +24,18 @@ canvas {
   left: 0;
   z-index: -1;
 }
-</style>
-	
-	
+    </style>
+
+  
+  
+  
+  
 
 </head>
 
 <body>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/91/three.min.js"></script>
 <script src="https://threejs.org/examples/js/loaders/PCDLoader.js"></script>
 <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
 <script src="https://threejs.org/examples/js/controls/TrackballControls.js"></script>
@@ -99,9 +43,15 @@ canvas {
 <script src="https://threejs.org/examples/js/loaders/PLYLoader.js"></script>
 <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 <script type="https://raw.githubusercontent.com/antonfed/fakebless/master/data.txt"></script>
+  
+  
+  
+
+    <script>
+      
 
 
-<script>
+
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			
@@ -372,10 +322,14 @@ function onWindowResize( event ) {
     renderer.setSize( window.innerWidth, window.innerHeight);
     renderer.render( scene, camera );
 }
+    </script><div><canvas width="1263" height="1067" style="width: 1263.6px; height: 1067.2px;"></canvas></div>
 
-	</script>
 
-<div><canvas width="2304" height="1067" style="width: 2304px; height: 1067.2px;"></canvas><div style="position: fixed; top: 0px; left: 0px; cursor: pointer; opacity: 0.9; z-index: 10000;"><canvas width="80" height="48" style="width: 80px; height: 48px; display: block;"></canvas><canvas width="80" height="48" style="width: 80px; height: 48px; display: none;"></canvas><canvas width="80" height="48" style="width: 80px; height: 48px; display: none;"></canvas></div></div>
 
-</body>
-	
+  
+  
+
+
+
+
+ </body></html>
